@@ -21,6 +21,7 @@
   --accent-soft: #A79CFF;
   --signal: #34A8FF;
   --ok: #3ECF8E;
+  --danger: #F0654A;
   --radius-lg: 22px;
   --radius-sm: 10px;
   color-scheme: dark;
@@ -40,6 +41,7 @@ html[data-theme="light"]{
   --accent-soft: #4D3ADB;
   --signal: #1D7FDB;
   --ok: #1D9F6C;
+  --danger: #D6402A;
   color-scheme: light;
 }
 
@@ -57,7 +59,6 @@ body{
   min-height:100vh;
   transition:background-color .2s, color .2s;
 }
-/* faint blueprint grid, engineer-schematic feel */
 body::before{
   content:"";
   position:fixed; inset:0; z-index:-1; pointer-events:none;
@@ -71,27 +72,16 @@ body::before{
 }
 html[data-theme="light"] body::before{ opacity:.35; }
 .mono{ font-family:'JetBrains Mono', monospace; }
-
 a{color:inherit;}
 img{max-width:100%; display:block;}
+.wrap{ max-width:1080px; margin:0 auto; padding:0 28px; }
 
-.wrap{
-  max-width:1080px;
-  margin:0 auto;
-  padding:0 28px;
-}
-
-/* ---------- circuit background lines ---------- */
-.circuit-bg{
-  position:fixed; inset:0; z-index:-1; opacity:.35; pointer-events:none;
-}
-
-/* ---------- top toolbar (edit controls) ---------- */
+/* ---------- toolbar ---------- */
 .toolbar{
   position:sticky; top:0; z-index:50;
-  display:flex; justify-content:flex-end; gap:10px;
+  display:flex; justify-content:flex-end; align-items:center; gap:10px;
   padding:14px 28px;
-  background:linear-gradient(to bottom, rgba(11,17,32,.92), rgba(11,17,32,0));
+  background:linear-gradient(to bottom, var(--bg) 60%, transparent);
   backdrop-filter:blur(6px);
 }
 .btn{
@@ -107,271 +97,166 @@ img{max-width:100%; display:block;}
   display:inline-flex; align-items:center; gap:8px;
 }
 .btn:hover{ border-color:var(--accent); color:var(--text); }
-.btn.primary{ background:var(--accent); border-color:var(--accent); color:#1A0E02; font-weight:600;}
+.btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600;}
 .btn.primary:hover{ background:var(--accent-soft); }
 .btn.small{ padding:6px 12px; font-size:12px;}
 .save-note{
   font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ok);
-  align-self:center; opacity:0; transition:opacity .3s;
+  opacity:0; transition:opacity .3s;
 }
 .save-note.show{opacity:1;}
 
-[contenteditable="true"]{
+/* ---------- editable text ---------- */
+.editable{
   outline: 1px dashed transparent;
   border-radius:6px;
   transition: outline-color .15s, background .15s;
 }
-body.edit-mode [contenteditable="true"]{
-  outline: 1px dashed rgba(232,135,58,.45);
-  background: rgba(232,135,58,.05);
+body.edit-mode .editable{
+  outline: 1px dashed rgba(124,108,255,.45);
+  background: rgba(124,108,255,.06);
 }
-body.edit-mode [contenteditable="true"]:focus{
+body.edit-mode .editable:focus{
   outline: 1px solid var(--accent);
-  background: rgba(232,135,58,.09);
+  background: rgba(124,108,255,.1);
 }
 
-/* ---------- hero ---------- */
-.hero{
-  padding:36px 0 60px;
-  display:grid;
-  grid-template-columns:260px 1fr;
-  gap:48px;
-  align-items:center;
+/* ---------- removable list items ---------- */
+.item-remove{
+  display:none;
+  align-items:center; justify-content:center;
+  width:20px; height:20px; border-radius:50%;
+  border:1px solid var(--danger); color:var(--danger);
+  background:transparent; cursor:pointer; font-size:13px; line-height:1;
+  flex:none;
 }
+.item-remove:hover{ background:var(--danger); color:#fff; }
+body.edit-mode .item-remove{ display:inline-flex; }
+
+.add-item-btn{
+  display:none;
+  border:1px dashed var(--line); background:transparent; color:var(--text-dim);
+  font-family:'JetBrains Mono',monospace; font-size:12.5px; cursor:pointer;
+  border-radius:10px; padding:9px 14px;
+}
+.add-item-btn:hover{ border-color:var(--accent); color:var(--accent-soft); }
+body.edit-mode .add-item-btn{ display:inline-flex; align-items:center; gap:6px; }
+
+/* ---------- hero ---------- */
+.hero{ padding:36px 0 60px; display:grid; grid-template-columns:260px 1fr; gap:48px; align-items:center; }
 .photo-frame{
-  position:relative;
-  width:240px; height:240px;
+  position:relative; width:240px; height:240px;
   clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);
-  background:var(--surface);
-  border:2px solid var(--accent);
+  background:var(--surface); border:2px solid var(--accent);
 }
 .photo-frame img{
   width:100%; height:100%; object-fit:cover;
   clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);
 }
 .photo-edit-btn{
-  display:none;
-  position:absolute; inset:0;
-  align-items:center; justify-content:center;
-  background:rgba(11,17,32,.55);
-  border:none; cursor:pointer;
-  color:var(--text); font-family:'JetBrains Mono',monospace; font-size:12.5px;
+  display:none; position:absolute; inset:0; align-items:center; justify-content:center;
+  background:rgba(7,11,22,.6); border:none; cursor:pointer;
+  color:#fff; font-family:'JetBrains Mono',monospace; font-size:12.5px;
   flex-direction:column; gap:8px;
   clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);
 }
 .photo-edit-btn svg{ width:22px; height:22px; }
 body.edit-mode .photo-edit-btn{ display:flex; }
-.photo-edit-btn:hover{ background:rgba(232,135,58,.35); }
+.photo-edit-btn:hover{ background:rgba(124,108,255,.45); }
 
-/* ---------- crop modal ---------- */
-.crop-modal{
-  display:none;
-  position:fixed; inset:0; z-index:100;
-  background:rgba(6,10,20,.82);
-  align-items:center; justify-content:center;
-  backdrop-filter:blur(4px);
-}
+.crop-modal{ display:none; position:fixed; inset:0; z-index:100; background:rgba(4,7,14,.82); align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .crop-modal.open{ display:flex; }
-.crop-box{
-  background:var(--surface); border:1px solid var(--line);
-  border-radius:var(--radius-lg); padding:24px;
-  width:min(92vw, 420px);
-}
+.crop-box{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg); padding:24px; width:min(92vw, 420px); }
 .crop-box h4{ margin:0 0 16px; font-family:'Space Grotesk',sans-serif; font-size:17px; }
-.crop-canvas-wrap{
-  width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden;
-  background:var(--bg-soft); border:1px solid var(--line);
-  cursor:grab; touch-action:none;
-}
+.crop-canvas-wrap{ width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden; background:var(--bg-soft); border:1px solid var(--line); cursor:grab; touch-action:none; }
 .crop-canvas-wrap:active{ cursor:grabbing; }
 .crop-canvas-wrap canvas{ width:100%; height:100%; display:block; }
 .crop-controls{ display:flex; align-items:center; gap:10px; margin-top:16px; }
 .crop-controls input[type=range]{ flex:1; accent-color:var(--accent); }
 .crop-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
-.eyebrow-line{
-  font-family:'JetBrains Mono',monospace;
-  font-size:13px;
-  color:var(--signal);
-  margin:0 0 10px;
-  display:flex; align-items:center; gap:10px;
-}
-.eyebrow-line .dot{width:7px;height:7px;border-radius:50%;background:var(--ok); box-shadow:0 0 8px var(--ok);}
-.hero h1{
-  font-family:'Space Grotesk',sans-serif;
-  font-size:clamp(32px, 5vw, 46px);
-  margin:0 0 6px;
-  font-weight:700;
-  letter-spacing:-.01em;
-}
-.hero .role{
-  font-size:19px;
-  color:var(--accent-soft);
-  margin:0 0 18px;
-  font-weight:600;
-}
-.hero p.pitch{
-  color:var(--text-dim);
-  max-width:56ch;
-  font-size:16px;
-  margin:0 0 22px;
-}
-.chips{ display:flex; flex-wrap:wrap; gap:10px; }
-.chip{
-  font-family:'JetBrains Mono',monospace;
-  font-size:12.5px;
-  border:1px solid var(--line);
-  padding:7px 13px;
-  border-radius:999px;
-  color:var(--text-dim);
-  display:inline-flex; align-items:center; gap:7px;
-}
-.chip svg{width:14px;height:14px;flex:none;}
+
+.eyebrow-line{ font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--signal); margin:0 0 10px; display:flex; align-items:center; gap:10px; }
+.eyebrow-line .dot{width:7px;height:7px;border-radius:50%;background:var(--ok); box-shadow:0 0 8px var(--ok); flex:none;}
+.hero h1{ font-family:'Space Grotesk',sans-serif; font-size:clamp(32px, 5vw, 46px); margin:0 0 6px; font-weight:700; letter-spacing:-.01em; }
+.hero .role{ font-size:19px; color:var(--accent-soft); margin:0 0 18px; font-weight:600; }
+.hero p.pitch{ color:var(--text-dim); max-width:56ch; font-size:16px; margin:0 0 22px; }
 
 .toolbelt{ display:flex; flex-wrap:wrap; gap:12px; }
-.tool{
-  display:flex; flex-direction:column; align-items:center; gap:6px;
-  width:74px; padding:12px 8px;
-  border:1px solid var(--line); border-radius:14px;
-  background:var(--surface);
-  transition:border-color .15s, transform .15s;
-}
+.tool{ display:flex; flex-direction:column; align-items:center; gap:6px; width:74px; padding:12px 8px; border:1px solid var(--line); border-radius:14px; background:var(--surface); transition:border-color .15s, transform .15s; }
 .tool:hover{ border-color:var(--accent); transform:translateY(-2px); }
-.tool svg{
-  width:26px; height:26px;
-  fill:none; stroke:var(--accent); stroke-width:1.6; stroke-linejoin:round;
-}
-.tool b{
-  font-family:'JetBrains Mono',monospace; font-weight:500; font-size:10.5px;
-  color:var(--text-dim); text-align:center;
-}
+.tool svg{ width:26px; height:26px; fill:none; stroke:var(--accent); stroke-width:1.6; stroke-linejoin:round; }
+.tool b{ font-family:'JetBrains Mono',monospace; font-weight:500; font-size:10.5px; color:var(--text-dim); text-align:center; }
 
-/* ---------- signal path ---------- */
+/* ---------- sections ---------- */
 .section{ padding:50px 0; border-top:1px solid var(--line); }
-.section-title{
-  font-family:'Space Grotesk',sans-serif;
-  font-size:26px; font-weight:700; margin:0 0 8px;
-}
+.section-title{ font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; margin:0 0 8px; }
 .section-sub{ color:var(--text-dim); margin:0 0 34px; font-size:15px; max-width:64ch;}
 
-.path{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:0;
-  position:relative;
-}
-.path::before{
-  content:"";
-  position:absolute; top:11px; right:0; left:0; height:2px;
-  background:repeating-linear-gradient(to left, var(--accent) 0 8px, transparent 8px 14px);
-}
-.path-node{ position:relative; padding-top:36px; }
-.path-node::before{
-  content:""; position:absolute; top:0; right:0;
-  width:24px; height:24px; border-radius:50%;
-  background:var(--bg-soft); border:2px solid var(--accent);
-}
-.path-node::after{
-  content:""; position:absolute; top:8px; right:8px;
-  width:8px; height:8px; border-radius:50%; background:var(--accent);
-}
-.path-node time{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--signal); }
+/* ---------- path / timeline ---------- */
+.path{ display:grid; grid-template-columns:repeat(4,1fr); gap:0; position:relative; }
+.path::before{ content:""; position:absolute; top:11px; left:0; right:0; height:2px; background:repeating-linear-gradient(to right, var(--accent) 0 8px, transparent 8px 14px); }
+.path-node{ position:relative; padding-top:36px; padding-right:8px; }
+.path-node::before{ content:""; position:absolute; top:0; left:0; width:24px; height:24px; border-radius:50%; background:var(--bg-soft); border:2px solid var(--accent); }
+.path-node::after{ content:""; position:absolute; top:8px; left:8px; width:8px; height:8px; border-radius:50%; background:var(--accent); }
+.path-node .item-remove{ position:absolute; top:0; right:0; }
+.path-node time{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--signal); display:block; }
 .path-node h3{ font-size:15.5px; margin:6px 0 4px; font-weight:700;}
 .path-node p{ font-size:13.5px; color:var(--text-dim); margin:0; }
-
-/* ---------- about ---------- */
-.about p{ font-size:16px; color:var(--text-dim); max-width:74ch; }
+.path-add-wrap{ margin-top:26px; }
 
 /* ---------- projects ---------- */
-.project{
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:var(--radius-lg);
-  padding:30px;
-  margin-bottom:22px;
-  display:grid;
-  grid-template-columns:1fr 240px;
-  gap:28px;
-  align-items:center;
-}
-.project .diagram{
-  background:var(--bg-soft);
-  border:1px solid var(--line);
-  border-radius:var(--radius-sm);
-  padding:14px;
-}
-.project h3{
-  font-family:'Space Grotesk',sans-serif;
-  font-size:21px; margin:0 0 10px; font-weight:700;
-}
+.project{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-lg); padding:30px; margin-bottom:22px; display:grid; grid-template-columns:1fr 240px; gap:28px; align-items:center; position:relative; }
+.project .item-remove{ position:absolute; top:16px; right:16px; }
+.project .diagram{ background:#0B1120; border:1px solid #26314F; border-radius:var(--radius-sm); padding:14px; }
+.project h3{ font-family:'Space Grotesk',sans-serif; font-size:21px; margin:0 0 10px; font-weight:700; padding-right:26px;}
 .project p.desc{ color:var(--text-dim); font-size:14.5px; margin:0 0 16px; }
-.stack{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px;}
-.stack span{
-  font-family:'JetBrains Mono',monospace; font-size:11.5px;
-  background:var(--surface-2); border:1px solid var(--line);
-  color:var(--accent-soft); padding:4px 10px; border-radius:6px;
-}
-.project-links{ display:flex; gap:10px; flex-wrap:wrap; }
-.project-links a{
-  font-family:'JetBrains Mono',monospace; font-size:12.5px;
-  border:1px solid var(--line); padding:8px 14px; border-radius:999px;
-  text-decoration:none; color:var(--text); display:inline-flex; align-items:center; gap:7px;
-}
+.stack{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; align-items:center;}
+.stack .tag{ font-family:'JetBrains Mono',monospace; font-size:11.5px; background:var(--surface-2); border:1px solid var(--line); color:var(--accent-soft); padding:4px 10px; border-radius:6px; display:inline-flex; align-items:center; gap:6px;}
+.stack .tag .item-remove{ width:14px; height:14px; font-size:10px; }
+.stack .add-item-btn{ padding:4px 10px; border-radius:6px; font-size:11px; }
+.project-links{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.project-links a{ font-family:'JetBrains Mono',monospace; font-size:12.5px; border:1px solid var(--line); padding:8px 14px; border-radius:999px; text-decoration:none; color:var(--text); display:inline-flex; align-items:center; gap:7px; }
 .project-links a:hover{ border-color:var(--signal); color:var(--signal); }
-.remove-project{
-  margin-top:14px; background:transparent; border:1px dashed var(--line);
-  color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:11.5px;
-  padding:5px 10px; border-radius:6px; cursor:pointer; display:none;
-}
-body.edit-mode .remove-project{ display:inline-block; }
-
-.add-project-btn{
-  width:100%; padding:18px; border-radius:var(--radius-lg);
-  border:1px dashed var(--line); background:transparent; color:var(--text-dim);
-  font-family:'JetBrains Mono',monospace; font-size:13.5px; cursor:pointer;
-  display:none;
-}
-body.edit-mode .add-project-btn{ display:block; }
-.add-project-btn:hover{ border-color:var(--accent); color:var(--accent-soft); }
+.project-links a.editable{ min-width:120px; }
+.projects-add-wrap{ margin-top:8px; }
 
 /* ---------- skills ---------- */
 .skill-groups{ display:grid; grid-template-columns:repeat(2,1fr); gap:22px; }
-.skill-group h4{
-  font-family:'JetBrains Mono',monospace; font-size:12.5px;
-  color:var(--signal); text-transform:none; margin:0 0 12px; font-weight:600;
-}
-.skill-group .chips{ margin-bottom:6px;}
+.skill-group{ position:relative; }
+.skill-group h4{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--signal); margin:0 0 12px; font-weight:600; }
+.chips{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.chip{ font-family:'JetBrains Mono',monospace; font-size:12.5px; border:1px solid var(--line); padding:7px 13px; border-radius:999px; color:var(--text-dim); display:inline-flex; align-items:center; gap:7px; background:var(--surface); }
+.chip .item-remove{ width:15px; height:15px; font-size:10px; }
+.chip.add-item-btn{ border-style:dashed; }
 
 /* ---------- certifications ---------- */
 .certs{ display:grid; gap:12px; }
-.cert{
-  display:flex; align-items:center; gap:14px;
-  background:var(--surface); border:1px solid var(--line);
-  border-radius:var(--radius-sm); padding:16px 18px;
-}
+.cert{ display:flex; align-items:center; gap:14px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); padding:16px 18px; position:relative;}
 .cert svg{ flex:none; width:22px; height:22px; color:var(--accent); }
-.cert h4{ margin:0 0 2px; font-size:15px; }
-.cert p{ margin:0; font-size:13px; color:var(--text-dim); }
+.cert .cert-title{ margin:0; font-size:15px; flex:1; }
+.cert .item-remove{ flex:none; }
+.certs-add-wrap{ margin-top:4px; }
 
 /* ---------- footer ---------- */
-footer{
-  border-top:1px solid var(--line);
-  padding:40px 0 60px;
-  display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px;
-}
-footer .contact-list{ display:flex; flex-direction:column; gap:8px; font-size:14px; color:var(--text-dim);}
-footer .contact-list a{ text-decoration:none; }
-footer .contact-list a:hover{ color:var(--accent-soft); }
+footer{ border-top:1px solid var(--line); padding:40px 0 60px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px; }
+.contact-list{ display:flex; flex-direction:column; gap:8px; font-size:14px; color:var(--text-dim);}
+.contact-line{ display:flex; align-items:center; gap:8px; }
+.contact-line a, .contact-line span{ text-decoration:none; }
+.contact-line a:hover{ color:var(--accent-soft); }
+.contact-line .item-remove{ width:16px; height:16px; font-size:10px; }
 footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-dim); max-width:34ch; }
+.footer-add-wrap{ margin-top:4px; }
 
 @media (max-width:760px){
   .hero{ grid-template-columns:1fr; text-align:center; }
   .photo-frame{ margin:0 auto; }
-  .chips{ justify-content:center; }
+  .toolbelt{ justify-content:center; }
   .path{ grid-template-columns:1fr; gap:26px; }
   .path::before{ display:none; }
-  .path-node{ padding-right:36px; padding-top:0; }
-  .path-node::before{ right:auto; left:0; top:0; }
-  .path-node::after{ right:auto; left:8px; top:8px; }
+  .path-node{ padding-left:36px; padding-top:0; padding-right:0;}
+  .path-node::before{ left:0; top:0; }
+  .path-node::after{ left:8px; top:8px; }
+  .path-node .item-remove{ left:auto; right:0; top: -6px;}
   .project{ grid-template-columns:1fr; }
   .skill-groups{ grid-template-columns:1fr; }
 }
@@ -402,10 +287,10 @@ footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:v
     </div>
     <input type="file" id="photoInput" accept="image/*" style="display:none;">
     <div>
-      <p class="eyebrow-line"><span class="dot"></span> Available for hire — Cairo, Egypt (Remote friendly)</p>
-      <h1 contenteditable="false" data-field="name">Bilal Ibrahim Mohamed</h1>
-      <p class="role" contenteditable="false" data-field="role">Cloud &amp; DevOps Engineer</p>
-      <p class="pitch" contenteditable="false" data-field="pitch">
+      <p class="eyebrow-line editable" contenteditable="false" data-field="eyebrow"><span class="dot"></span> Available for hire — Cairo, Egypt (Remote friendly)</p>
+      <h1 class="editable" contenteditable="false" data-field="name">Bilal Ibrahim Mohamed</h1>
+      <p class="role editable" contenteditable="false" data-field="role">Cloud &amp; DevOps Engineer</p>
+      <p class="pitch editable" contenteditable="false" data-field="pitch">
         An electronics and communications engineer who moved his engineering
         discipline into cloud infrastructure — building Kubernetes clusters,
         automating CI/CD, and writing Infrastructure as Code with Terraform
@@ -422,145 +307,164 @@ footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:v
     </div>
   </section>
 
-  <!-- SIGNAL PATH -->
+  <!-- PATH / TIMELINE -->
   <section class="section">
-    <h2 class="section-title">The path</h2>
-    <p class="section-sub">From communications engineering to the AWS cloud — a journey built one step at a time.</p>
-    <div class="path">
-      <div class="path-node">
-        <time class="mono">2019 – 2024</time>
-        <h3>B.Sc. in Electronics &amp; Communications Engineering</h3>
-        <p>MTI University — Graduation project: Vehicle theft detection with remote engine locking (A+)</p>
+    <h2 class="section-title editable" contenteditable="false" data-field="pathTitle">The path</h2>
+    <p class="section-sub editable" contenteditable="false" data-field="pathSub">From communications engineering to the AWS cloud — a journey built one step at a time.</p>
+    <div class="path" id="pathList" data-block>
+
+      <div class="path-node list-item">
+        <button class="item-remove" type="button">×</button>
+        <time class="mono editable" contenteditable="false">2019 – 2024</time>
+        <h3 class="editable" contenteditable="false">B.Sc. in Electronics &amp; Communications Engineering</h3>
+        <p class="editable" contenteditable="false">MTI University — Graduation project: Vehicle theft detection with remote engine locking (A+)</p>
       </div>
-      <div class="path-node">
-        <time class="mono">2026</time>
-        <h3>NTI — Cloud &amp; DevOps Accelerator</h3>
-        <p>Linux (RHCSA), Ansible, OpenShift/Kubernetes, Terraform &amp; CloudFormation</p>
+
+      <div class="path-node list-item">
+        <button class="item-remove" type="button">×</button>
+        <time class="mono editable" contenteditable="false">2026</time>
+        <h3 class="editable" contenteditable="false">NTI — Cloud &amp; DevOps Accelerator</h3>
+        <p class="editable" contenteditable="false">Linux (RHCSA), Ansible, OpenShift/Kubernetes, Terraform &amp; CloudFormation</p>
       </div>
-      <div class="path-node">
-        <time class="mono">2026</time>
-        <h3>NTI — Cloud Services Management</h3>
-        <p>AWS foundations: EC2, S3, DynamoDB, EKS, ECS, Lambda, IAM, VPC</p>
+
+      <div class="path-node list-item">
+        <button class="item-remove" type="button">×</button>
+        <time class="mono editable" contenteditable="false">2026</time>
+        <h3 class="editable" contenteditable="false">NTI — Cloud Services Management</h3>
+        <p class="editable" contenteditable="false">AWS foundations: EC2, S3, DynamoDB, EKS, ECS, Lambda, IAM, VPC</p>
       </div>
-      <div class="path-node">
-        <time class="mono">2026 – present</time>
-        <h3>Cloud DevOps Intern @ Ivolve</h3>
-        <p>Docker, Kubernetes, Jenkins CI/CD, ArgoCD (GitOps), Ansible</p>
+
+      <div class="path-node list-item">
+        <button class="item-remove" type="button">×</button>
+        <time class="mono editable" contenteditable="false">2026 – present</time>
+        <h3 class="editable" contenteditable="false">Cloud DevOps Intern @ Ivolve</h3>
+        <p class="editable" contenteditable="false">Docker, Kubernetes, Jenkins CI/CD, ArgoCD (GitOps), Ansible</p>
       </div>
+
+    </div>
+    <div class="path-add-wrap">
+      <button class="add-item-btn" data-target="pathList" data-type="path" type="button">+ Add a milestone</button>
     </div>
   </section>
 
   <!-- PROJECTS -->
   <section class="section" id="projectsSection">
-    <h2 class="section-title">Projects</h2>
-    <p class="section-sub">Every project lives in its own GitHub repo, with full code and documentation.</p>
+    <h2 class="section-title editable" contenteditable="false" data-field="projectsTitle">Projects</h2>
+    <p class="section-sub editable" contenteditable="false" data-field="projectsSub">Every project lives in its own GitHub repo, with full code and documentation.</p>
 
-    <div id="projectsList">
+    <div id="projectsList" data-block>
 
-      <article class="project" data-project-id="p1">
+      <article class="project list-item" data-project-id="p1">
+        <button class="item-remove" type="button">×</button>
         <div>
-          <h3 contenteditable="false" data-field="title">K8s Cluster — Provisioning &amp; Configuration</h3>
-          <p class="desc" contenteditable="false" data-field="desc">
-            Provisions a multi-node Kubernetes cluster on AWS EC2 end to end with
-            Terraform, then configures it (containerd + kubeadm + kubelet + Calico CNI)
-            with Ansible — wired together in one GitLab CI/CD pipeline with four
-            stages: validate → plan → apply → configure.
+          <h3 class="editable" contenteditable="false">K8s Cluster — Provisioning &amp; Configuration</h3>
+          <p class="desc editable" contenteditable="false">
+            Provisions a multi-node Kubernetes cluster on AWS EC2 end to end with Terraform,
+            then configures it (containerd + kubeadm + kubelet + Calico CNI) with Ansible —
+            wired together in one GitLab CI/CD pipeline with four stages:
+            validate → plan → apply → configure.
           </p>
           <div class="stack">
-            <span>Terraform</span><span>Ansible</span><span>AWS EC2</span><span>GitLab CI/CD</span><span>Kubernetes</span>
+            <span class="tag"><span class="editable" contenteditable="false">Terraform</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">Ansible</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">AWS EC2</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">GitLab CI/CD</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">Kubernetes</span><button class="item-remove" type="button">×</button></span>
+            <button class="add-item-btn tag" data-type="stack-tag" type="button">+ tag</button>
           </div>
           <div class="project-links">
-            <a href="https://github.com/BilalIbrahim1/k8s-cluster-provisioning" target="_blank" rel="noopener">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.51-3.5-.7-3.72-1.34-.13-.34-.68-1.38-1.16-1.67-.4-.22-.97-.76-.02-.78.9-.01 1.54.85 1.75 1.2 1.02 1.75 2.65 1.26 3.3.96.1-.75.4-1.26.72-1.55-2.5-.29-5.13-1.28-5.13-5.7 0-1.26.44-2.29 1.16-3.1-.12-.29-.5-1.46.11-3.04 0 0 .95-.31 3.13 1.18a10.6 10.6 0 0 1 5.7 0c2.17-1.49 3.12-1.18 3.12-1.18.61 1.58.23 2.75.11 3.04.72.81 1.16 1.83 1.16 3.1 0 4.43-2.64 5.4-5.15 5.69.41.36.77 1.07.77 2.16 0 1.56-.01 2.82-.01 3.2 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
-              View on GitHub
+            <a href="https://github.com/BilalIbrahim1/k8s-cluster-provisioning" target="_blank" rel="noopener" class="editable" contenteditable="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex:none;"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.51-3.5-.7-3.72-1.34-.13-.34-.68-1.38-1.16-1.67-.4-.22-.97-.76-.02-.78.9-.01 1.54.85 1.75 1.2 1.02 1.75 2.65 1.26 3.3.96.1-.75.4-1.26.72-1.55-2.5-.29-5.13-1.28-5.13-5.7 0-1.26.44-2.29 1.16-3.1-.12-.29-.5-1.46.11-3.04 0 0 .95-.31 3.13 1.18a10.6 10.6 0 0 1 5.7 0c2.17-1.49 3.12-1.18 3.12-1.18.61 1.58.23 2.75.11 3.04.72.81 1.16 1.83 1.16 3.1 0 4.43-2.64 5.4-5.15 5.69.41.36.77 1.07.77 2.16 0 1.56-.01 2.82-.01 3.2 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
+              github.com/BilalIbrahim1/k8s-cluster-provisioning
             </a>
           </div>
-          <button class="remove-project btn small">Delete project</button>
         </div>
         <div class="diagram">
           <svg viewBox="0 0 220 190" width="100%" xmlns="http://www.w3.org/2000/svg">
             <rect x="8" y="8" width="204" height="174" rx="10" fill="none" stroke="#2A3557" stroke-dasharray="4 4"/>
             <text x="16" y="24" font-family="JetBrains Mono, monospace" font-size="9" fill="#9AA4C2">VPC</text>
-            <rect x="80" y="34" width="60" height="34" rx="6" fill="#1B2444" stroke="#E8873A" stroke-width="1.5"/>
+            <rect x="80" y="34" width="60" height="34" rx="6" fill="#1B2444" stroke="#7C6CFF" stroke-width="1.5"/>
             <text x="110" y="55" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#F3F1EA">control-plane</text>
-            <rect x="24" y="118" width="70" height="34" rx="6" fill="#1B2444" stroke="#4FA3E3" stroke-width="1.5"/>
+            <rect x="24" y="118" width="70" height="34" rx="6" fill="#1B2444" stroke="#34A8FF" stroke-width="1.5"/>
             <text x="59" y="139" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#F3F1EA">worker-1</text>
-            <rect x="126" y="118" width="70" height="34" rx="6" fill="#1B2444" stroke="#4FA3E3" stroke-width="1.5"/>
+            <rect x="126" y="118" width="70" height="34" rx="6" fill="#1B2444" stroke="#34A8FF" stroke-width="1.5"/>
             <text x="161" y="139" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#F3F1EA">worker-2</text>
-            <path d="M104 68 L59 118" stroke="#57C79A" stroke-width="1.5" fill="none"/>
-            <path d="M116 68 L161 118" stroke="#57C79A" stroke-width="1.5" fill="none"/>
+            <path d="M104 68 L59 118" stroke="#3ECF8E" stroke-width="1.5" fill="none"/>
+            <path d="M116 68 L161 118" stroke="#3ECF8E" stroke-width="1.5" fill="none"/>
           </svg>
         </div>
       </article>
 
-      <article class="project" data-project-id="p2">
+      <article class="project list-item" data-project-id="p2">
+        <button class="item-remove" type="button">×</button>
         <div>
-          <h3 contenteditable="false" data-field="title">System Monitoring Tool</h3>
-          <p class="desc" contenteditable="false" data-field="desc">
-            A lightweight Bash tool that watches CPU, memory and disk in real time
-            and sends an e-mail alert over SMTP the moment any metric crosses its
-            threshold — running continuously as a systemd service.
+          <h3 class="editable" contenteditable="false">System Monitoring Tool</h3>
+          <p class="desc editable" contenteditable="false">
+            A lightweight Bash tool that watches CPU, memory and disk in real time and sends
+            an e-mail alert over SMTP the moment any metric crosses its threshold — running
+            continuously as a systemd service.
           </p>
           <div class="stack">
-            <span>Bash</span><span>SMTP</span><span>systemd</span><span>Linux</span>
+            <span class="tag"><span class="editable" contenteditable="false">Bash</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">SMTP</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">systemd</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">Linux</span><button class="item-remove" type="button">×</button></span>
+            <button class="add-item-btn tag" data-type="stack-tag" type="button">+ tag</button>
           </div>
           <div class="project-links">
-            <a href="https://github.com/BilalIbrahim1/system-monitoring-tool" target="_blank" rel="noopener">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.51-3.5-.7-3.72-1.34-.13-.34-.68-1.38-1.16-1.67-.4-.22-.97-.76-.02-.78.9-.01 1.54.85 1.75 1.2 1.02 1.75 2.65 1.26 3.3.96.1-.75.4-1.26.72-1.55-2.5-.29-5.13-1.28-5.13-5.7 0-1.26.44-2.29 1.16-3.1-.12-.29-.5-1.46.11-3.04 0 0 .95-.31 3.13 1.18a10.6 10.6 0 0 1 5.7 0c2.17-1.49 3.12-1.18 3.12-1.18.61 1.58.23 2.75.11 3.04.72.81 1.16 1.83 1.16 3.1 0 4.43-2.64 5.4-5.15 5.69.41.36.77 1.07.77 2.16 0 1.56-.01 2.82-.01 3.2 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
-              View on GitHub
+            <a href="https://github.com/BilalIbrahim1/system-monitoring-tool" target="_blank" rel="noopener" class="editable" contenteditable="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex:none;"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.51-3.5-.7-3.72-1.34-.13-.34-.68-1.38-1.16-1.67-.4-.22-.97-.76-.02-.78.9-.01 1.54.85 1.75 1.2 1.02 1.75 2.65 1.26 3.3.96.1-.75.4-1.26.72-1.55-2.5-.29-5.13-1.28-5.13-5.7 0-1.26.44-2.29 1.16-3.1-.12-.29-.5-1.46.11-3.04 0 0 .95-.31 3.13 1.18a10.6 10.6 0 0 1 5.7 0c2.17-1.49 3.12-1.18 3.12-1.18.61 1.58.23 2.75.11 3.04.72.81 1.16 1.83 1.16 3.1 0 4.43-2.64 5.4-5.15 5.69.41.36.77 1.07.77 2.16 0 1.56-.01 2.82-.01 3.2 0 .27.18.6.69.49A10.26 10.26 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>
+              github.com/BilalIbrahim1/system-monitoring-tool
             </a>
           </div>
-          <button class="remove-project btn small">Delete project</button>
         </div>
         <div class="diagram">
           <svg viewBox="0 0 220 190" width="100%" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="70" cy="60" r="34" fill="none" stroke="#4FA3E3" stroke-width="6" stroke-dasharray="160" stroke-dashoffset="60" transform="rotate(-90 70 60)"/>
+            <circle cx="70" cy="60" r="34" fill="none" stroke="#34A8FF" stroke-width="6" stroke-dasharray="160" stroke-dashoffset="60" transform="rotate(-90 70 60)"/>
             <text x="70" y="65" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="#F3F1EA">82%</text>
             <text x="70" y="106" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#9AA4C2">CPU</text>
-            <path d="M112 60 h50" stroke="#E8873A" stroke-width="1.5" marker-end="url(#arrow)"/>
-            <defs>
-              <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 Z" fill="#E8873A"/>
-              </marker>
-            </defs>
-            <rect x="168" y="34" width="42" height="30" rx="4" fill="#1B2444" stroke="#E8873A"/>
+            <path d="M112 60 h50" stroke="#7C6CFF" stroke-width="1.5" marker-end="url(#arrow)"/>
+            <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7C6CFF"/></marker></defs>
+            <rect x="168" y="34" width="42" height="30" rx="4" fill="#1B2444" stroke="#7C6CFF"/>
             <path d="M170 38 l19 13 19-13" stroke="#F3F1EA" stroke-width="1.3" fill="none"/>
             <text x="189" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#9AA4C2">SMTP alert</text>
             <rect x="24" y="128" width="172" height="40" rx="6" fill="#1B2444" stroke="#2A3557"/>
-            <text x="34" y="145" font-family="JetBrains Mono, monospace" font-size="7" fill="#57C79A">14:02:11 CPU=82% MEM=61%</text>
+            <text x="34" y="145" font-family="JetBrains Mono, monospace" font-size="7" fill="#3ECF8E">14:02:11 CPU=82% MEM=61%</text>
             <text x="34" y="158" font-family="JetBrains Mono, monospace" font-size="7" fill="#9AA4C2">14:02:11 ALERT sent → email</text>
           </svg>
         </div>
       </article>
 
-      <article class="project" data-project-id="p3">
+      <article class="project list-item" data-project-id="p3">
+        <button class="item-remove" type="button">×</button>
         <div>
-          <h3 contenteditable="false" data-field="title">Vehicle Theft Detection with Remote Engine Locking</h3>
-          <p class="desc" contenteditable="false" data-field="desc">
-            Graduation project (Excellent, A+) — an embedded system that detects
-            vehicle theft attempts and enables remote engine locking. The same
-            foundation that later shaped how he thinks about distributed
-            systems and real-time monitoring in the cloud.
+          <h3 class="editable" contenteditable="false">Vehicle Theft Detection with Remote Engine Locking</h3>
+          <p class="desc editable" contenteditable="false">
+            Graduation project (Excellent, A+) — an embedded system that detects vehicle theft
+            attempts and enables remote engine locking. The same foundation that later shaped
+            how he thinks about distributed systems and real-time monitoring in the cloud.
           </p>
           <div class="stack">
-            <span>Embedded Systems</span><span>GSM/GPS</span><span>Remote Control</span>
+            <span class="tag"><span class="editable" contenteditable="false">Embedded Systems</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">GSM/GPS</span><button class="item-remove" type="button">×</button></span>
+            <span class="tag"><span class="editable" contenteditable="false">Remote Control</span><button class="item-remove" type="button">×</button></span>
+            <button class="add-item-btn tag" data-type="stack-tag" type="button">+ tag</button>
           </div>
           <div class="project-links">
-            <span class="chip mono">Graduation Project — MTI University</span>
+            <span class="chip mono editable" contenteditable="false">Graduation Project — MTI University</span>
           </div>
-          <button class="remove-project btn small">Delete project</button>
         </div>
         <div class="diagram">
           <svg viewBox="0 0 220 190" width="100%" xmlns="http://www.w3.org/2000/svg">
-            <rect x="30" y="90" width="120" height="40" rx="10" fill="#1B2444" stroke="#4FA3E3" stroke-width="1.5"/>
+            <rect x="30" y="90" width="120" height="40" rx="10" fill="#1B2444" stroke="#34A8FF" stroke-width="1.5"/>
             <circle cx="55" cy="132" r="8" fill="#0F172E" stroke="#9AA4C2"/>
             <circle cx="125" cy="132" r="8" fill="#0F172E" stroke="#9AA4C2"/>
-            <rect x="60" y="70" width="60" height="24" rx="6" fill="#1B2444" stroke="#4FA3E3" stroke-width="1.5"/>
-            <path d="M150 60 q20 -10 30 5" stroke="#57C79A" stroke-width="1.5" fill="none"/>
-            <path d="M150 68 q26 -8 34 12" stroke="#57C79A" stroke-width="1.5" fill="none" opacity=".6"/>
-            <rect x="176" y="34" width="30" height="30" rx="6" fill="#1B2444" stroke="#E8873A"/>
-            <rect x="186" y="44" width="10" height="8" rx="1" fill="none" stroke="#E8873A"/>
-            <path d="M188 44 v-4 a3 3 0 0 1 6 0 v4" stroke="#E8873A" fill="none"/>
+            <rect x="60" y="70" width="60" height="24" rx="6" fill="#1B2444" stroke="#34A8FF" stroke-width="1.5"/>
+            <path d="M150 60 q20 -10 30 5" stroke="#3ECF8E" stroke-width="1.5" fill="none"/>
+            <path d="M150 68 q26 -8 34 12" stroke="#3ECF8E" stroke-width="1.5" fill="none" opacity=".6"/>
+            <rect x="176" y="34" width="30" height="30" rx="6" fill="#1B2444" stroke="#7C6CFF"/>
+            <rect x="186" y="44" width="10" height="8" rx="1" fill="none" stroke="#7C6CFF"/>
+            <path d="M188 44 v-4 a3 3 0 0 1 6 0 v4" stroke="#7C6CFF" fill="none"/>
             <text x="191" y="78" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="#9AA4C2">remote lock</text>
           </svg>
         </div>
@@ -568,69 +472,106 @@ footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:v
 
     </div>
 
-    <button class="add-project-btn" id="addProjectBtn">+ Add a new project</button>
+    <div class="projects-add-wrap">
+      <button class="add-item-btn" data-target="projectsList" data-type="project" type="button">+ Add a new project</button>
+    </div>
   </section>
 
   <!-- SKILLS -->
   <section class="section">
-    <h2 class="section-title">Technical skills</h2>
+    <h2 class="section-title editable" contenteditable="false" data-field="skillsTitle">Technical skills</h2>
     <div class="skill-groups">
+
       <div class="skill-group">
-        <h4 class="mono">DEVOPS &amp; CLOUD</h4>
-        <div class="chips">
-          <span class="chip">Docker</span><span class="chip">Kubernetes</span><span class="chip">Jenkins CI/CD</span>
-          <span class="chip">GitHub Actions</span><span class="chip">Ansible</span><span class="chip">Terraform</span><span class="chip">AWS</span>
+        <h4 class="mono editable" contenteditable="false">DEVOPS &amp; CLOUD</h4>
+        <div class="chips" id="skillsDevops" data-block>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Docker</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Kubernetes</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Jenkins CI/CD</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">GitHub Actions</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Ansible</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Terraform</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">AWS</span><button class="item-remove" type="button">×</button></span>
+          <button class="add-item-btn chip" data-target="skillsDevops" data-type="chip" type="button">+ skill</button>
         </div>
       </div>
+
       <div class="skill-group">
-        <h4 class="mono">OS &amp; INFRASTRUCTURE</h4>
-        <div class="chips">
-          <span class="chip">Linux (RHCSA)</span><span class="chip">Virtualization</span><span class="chip">Networking</span>
+        <h4 class="mono editable" contenteditable="false">OS &amp; INFRASTRUCTURE</h4>
+        <div class="chips" id="skillsOs" data-block>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Linux (RHCSA)</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Virtualization</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Networking</span><button class="item-remove" type="button">×</button></span>
+          <button class="add-item-btn chip" data-target="skillsOs" data-type="chip" type="button">+ skill</button>
         </div>
       </div>
+
       <div class="skill-group">
-        <h4 class="mono">PROGRAMMING</h4>
-        <div class="chips">
-          <span class="chip">YAML</span><span class="chip">Python</span><span class="chip">Groovy</span><span class="chip">Bash</span>
+        <h4 class="mono editable" contenteditable="false">PROGRAMMING</h4>
+        <div class="chips" id="skillsProg" data-block>
+          <span class="chip list-item"><span class="editable" contenteditable="false">YAML</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Python</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Groovy</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Bash</span><button class="item-remove" type="button">×</button></span>
+          <button class="add-item-btn chip" data-target="skillsProg" data-type="chip" type="button">+ skill</button>
         </div>
       </div>
+
       <div class="skill-group">
-        <h4 class="mono">LANGUAGES</h4>
-        <div class="chips">
-          <span class="chip">Arabic — Fluent</span><span class="chip">English — Upper-Intermediate (B2)</span>
+        <h4 class="mono editable" contenteditable="false">LANGUAGES</h4>
+        <div class="chips" id="skillsLang" data-block>
+          <span class="chip list-item"><span class="editable" contenteditable="false">Arabic — Fluent</span><button class="item-remove" type="button">×</button></span>
+          <span class="chip list-item"><span class="editable" contenteditable="false">English — Upper-Intermediate (B2)</span><button class="item-remove" type="button">×</button></span>
+          <button class="add-item-btn chip" data-target="skillsLang" data-type="chip" type="button">+ skill</button>
         </div>
       </div>
+
     </div>
   </section>
 
   <!-- CERTIFICATIONS -->
   <section class="section">
-    <h2 class="section-title">Certifications</h2>
-    <div class="certs">
-      <div class="cert">
+    <h2 class="section-title editable" contenteditable="false" data-field="certsTitle">Certifications</h2>
+    <div class="certs" id="certsList" data-block>
+
+      <div class="cert list-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
-        <div><h4>AWS Certified Cloud Practitioner (CLF-C02)</h4></div>
+        <h4 class="cert-title editable" contenteditable="false">AWS Certified Cloud Practitioner (CLF-C02)</h4>
+        <button class="item-remove" type="button">×</button>
       </div>
-      <div class="cert">
+
+      <div class="cert list-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
-        <div><h4>AWS Certified Solutions Architect (SAP-C02)</h4></div>
+        <h4 class="cert-title editable" contenteditable="false">AWS Certified Solutions Architect (SAP-C02)</h4>
+        <button class="item-remove" type="button">×</button>
       </div>
-      <div class="cert">
+
+      <div class="cert list-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
-        <div><h4>Red Hat System Administration I &amp; II (RH124 – RH134)</h4></div>
+        <h4 class="cert-title editable" contenteditable="false">Red Hat System Administration I &amp; II (RH124 – RH134)</h4>
+        <button class="item-remove" type="button">×</button>
       </div>
+
+    </div>
+    <div class="certs-add-wrap">
+      <button class="add-item-btn" data-target="certsList" data-type="cert" type="button">+ Add a certification</button>
     </div>
   </section>
 
   <footer>
-    <div class="contact-list mono">
-      <a href="mailto:blal.ibrahim67@gmail.com">blal.ibrahim67@gmail.com</a>
-      <a href="tel:+201017868615">+20 101 786 8615</a>
-      <a href="https://www.linkedin.com/in/bilal-ibrahim" target="_blank" rel="noopener">linkedin.com/in/bilal-ibrahim</a>
-      <a href="https://github.com/BilalIbrahim1" target="_blank" rel="noopener">github.com/BilalIbrahim1</a>
-      <span>Cairo, Egypt</span>
+    <div>
+      <div class="contact-list mono" id="contactList" data-block>
+        <div class="contact-line list-item"><a href="mailto:blal.ibrahim67@gmail.com" class="editable" contenteditable="false">blal.ibrahim67@gmail.com</a><button class="item-remove" type="button">×</button></div>
+        <div class="contact-line list-item"><a href="tel:+201017868615" class="editable" contenteditable="false">+20 101 786 8615</a><button class="item-remove" type="button">×</button></div>
+        <div class="contact-line list-item"><a href="https://www.linkedin.com/in/bilal-ibrahim" target="_blank" rel="noopener" class="editable" contenteditable="false">linkedin.com/in/bilal-ibrahim</a><button class="item-remove" type="button">×</button></div>
+        <div class="contact-line list-item"><a href="https://github.com/BilalIbrahim1" target="_blank" rel="noopener" class="editable" contenteditable="false">github.com/BilalIbrahim1</a><button class="item-remove" type="button">×</button></div>
+        <div class="contact-line list-item"><span class="editable" contenteditable="false">Cairo, Egypt</span><button class="item-remove" type="button">×</button></div>
+      </div>
+      <div class="footer-add-wrap">
+        <button class="add-item-btn" data-target="contactList" data-type="contact" type="button">+ Add a link</button>
+      </div>
     </div>
-    <p class="signoff">// Thanks for reading — happy to jump on a call or interview anytime.</p>
+    <p class="signoff editable" contenteditable="false" data-field="signoff">// Thanks for reading — happy to jump on a call or interview anytime.</p>
   </footer>
 
 </div>
@@ -638,9 +579,7 @@ footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:v
 <div class="crop-modal" id="cropModal">
   <div class="crop-box">
     <h4>Adjust your photo</h4>
-    <div class="crop-canvas-wrap" id="cropWrap">
-      <canvas id="cropCanvas" width="480" height="480"></canvas>
-    </div>
+    <div class="crop-canvas-wrap" id="cropWrap"><canvas id="cropCanvas" width="480" height="480"></canvas></div>
     <div class="crop-controls">
       <span class="mono" style="font-size:12px;color:var(--text-dim);">Zoom</span>
       <input type="range" id="zoomRange" min="100" max="300" value="100">
@@ -673,106 +612,75 @@ footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:v
     }
   };
 
-  /* ---------------- theme (dark / light) ---------------- */
+  const STATE_KEY = 'coverletter-state-v2';
+  const PHOTO_KEY = 'coverletter-photo-v1';
   const THEME_KEY = 'theme-mode';
-  const themeToggle = document.getElementById('themeToggle');
-  const themeLabel = document.getElementById('themeLabel');
-  const themeIcon = document.getElementById('themeIcon');
-  const moonPath = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>';
-  const sunPath = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
-
-  function applyTheme(mode){
-    document.documentElement.setAttribute('data-theme', mode);
-    if(mode === 'light'){
-      themeIcon.innerHTML = moonPath;
-      themeLabel.textContent = 'Dark mode';
-    } else {
-      themeIcon.innerHTML = sunPath;
-      themeLabel.textContent = 'Light mode';
-    }
-  }
-
-  (async ()=>{
-    const saved = await store.get(THEME_KEY);
-    applyTheme(saved && saved.value === 'light' ? 'light' : 'dark');
-  })();
-
-  themeToggle.addEventListener('click', async ()=>{
-    const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-    const next = current === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    await store.set(THEME_KEY, next);
-  });
 
   const body = document.body;
   const editToggle = document.getElementById('editToggle');
   const resetBtn = document.getElementById('resetBtn');
   const saveNote = document.getElementById('saveNote');
-  const addProjectBtn = document.getElementById('addProjectBtn');
-  const projectsList = document.getElementById('projectsList');
-  const STORAGE_KEY = 'coverletter-state-v1';
-
   let editMode = false;
+  let saveTimer = null;
 
-  function setEditable(on){
-    document.querySelectorAll('[data-field]').forEach(el => el.setAttribute('contenteditable', on ? 'true' : 'false'));
+  /* ---------------- theme ---------------- */
+  const themeToggle = document.getElementById('themeToggle');
+  const themeLabel = document.getElementById('themeLabel');
+  const themeIcon = document.getElementById('themeIcon');
+  const moonPath = '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/>';
+  const sunPath = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  function applyTheme(mode){
+    document.documentElement.setAttribute('data-theme', mode);
+    themeIcon.innerHTML = mode === 'light' ? moonPath : sunPath;
+    themeLabel.textContent = mode === 'light' ? 'Dark mode' : 'Light mode';
   }
+  (async ()=>{ const saved = await store.get(THEME_KEY); applyTheme(saved && saved.value === 'light' ? 'light' : 'dark'); })();
+  themeToggle.addEventListener('click', async ()=>{
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    await store.set(THEME_KEY, next);
+  });
 
-  function flashSaved(){
-    saveNote.classList.add('show');
-    setTimeout(()=>saveNote.classList.remove('show'), 1400);
+  /* ---------------- edit mode ---------------- */
+  function setEditable(on){
+    document.querySelectorAll('.editable').forEach(el => el.setAttribute('contenteditable', on ? 'true' : 'false'));
+  }
+  function flashSaved(){ saveNote.classList.add('show'); setTimeout(()=>saveNote.classList.remove('show'), 1200); }
+
+  function scheduleSave(){
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveState, 400);
   }
 
   async function saveState(){
     try{
       const fields = {};
-      document.querySelectorAll('[data-field]').forEach(el=>{
-        const key = el.closest('[data-project-id]')
-          ? el.closest('[data-project-id]').dataset.projectId + ':' + el.dataset.field
-          : el.dataset.field;
-        fields[key] = el.innerHTML;
-      });
-      const extraProjects = Array.from(projectsList.querySelectorAll('[data-project-id^="new-"]')).map(p => p.outerHTML);
-      const removedIds = window.__removedIds || [];
-      await store.set(STORAGE_KEY, JSON.stringify({fields, extraProjects, removedIds}));
+      document.querySelectorAll('[data-field]').forEach(el=>{ fields[el.dataset.field] = el.innerHTML; });
+      const blocks = {};
+      document.querySelectorAll('[data-block]').forEach(el=>{ blocks[el.id] = el.innerHTML; });
+      await store.set(STATE_KEY, JSON.stringify({fields, blocks}));
       flashSaved();
     }catch(e){ console.error('save failed', e); }
   }
 
   async function loadState(){
     try{
-      const res = await store.get(STORAGE_KEY);
+      const res = await store.get(STATE_KEY);
       if(!res) return;
       const data = JSON.parse(res.value);
-      if(data.removedIds){
-        data.removedIds.forEach(id=>{
-          const el = projectsList.querySelector('[data-project-id="'+id+'"]');
-          if(el) el.remove();
-        });
-      }
-      if(data.extraProjects){
-        data.extraProjects.forEach(html=>{
-          projectsList.insertAdjacentHTML('beforeend', html);
+      if(data.blocks){
+        Object.entries(data.blocks).forEach(([id, html])=>{
+          const el = document.getElementById(id);
+          if(el) el.innerHTML = html;
         });
       }
       if(data.fields){
         Object.entries(data.fields).forEach(([key, html])=>{
-          let selector, field;
-          if(key.includes(':')){
-            const [pid, f] = key.split(':');
-            const scope = projectsList.querySelector('[data-project-id="'+pid+'"]');
-            if(!scope) return;
-            const el = scope.querySelector('[data-field="'+f+'"]');
-            if(el) el.innerHTML = html;
-          } else {
-            const el = document.querySelector('[data-field="'+key+'"]:not([data-project-id] [data-field])');
-            const topLevel = Array.from(document.querySelectorAll('[data-field="'+key+'"]')).find(e=>!e.closest('[data-project-id]'));
-            if(topLevel) topLevel.innerHTML = html;
-          }
+          const el = document.querySelector('[data-field="'+key+'"]');
+          if(el) el.innerHTML = html;
         });
       }
-      attachRemoveHandlers();
-    }catch(e){ /* no saved state yet */ }
+    }catch(e){ /* nothing saved yet */ }
   }
 
   editToggle.addEventListener('click', ()=>{
@@ -785,61 +693,114 @@ footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:v
 
   resetBtn.addEventListener('click', async ()=>{
     if(!confirm('Reset to the original version? Your saved edits will be cleared.')) return;
-    try{ await store.delete(STORAGE_KEY); }catch(e){}
-    try{ await store.delete('coverletter-photo-v1'); }catch(e){}
+    try{ await store.delete(STATE_KEY); }catch(e){}
+    try{ await store.delete(PHOTO_KEY); }catch(e){}
     location.reload();
   });
 
-  let newProjectCount = 0;
-  addProjectBtn.addEventListener('click', ()=>{
-    newProjectCount++;
-    const id = 'new-' + Date.now() + '-' + newProjectCount;
+  /* ---------------- add / remove item factories ---------------- */
+  function newPathNode(){
+    const div = document.createElement('div');
+    div.className = 'path-node list-item';
+    div.innerHTML = `
+      <button class="item-remove" type="button">×</button>
+      <time class="mono editable" contenteditable="true">Year</time>
+      <h3 class="editable" contenteditable="true">New milestone</h3>
+      <p class="editable" contenteditable="true">Describe what happened here.</p>`;
+    return div;
+  }
+  function newCert(){
+    const div = document.createElement('div');
+    div.className = 'cert list-item';
+    div.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+      <h4 class="cert-title editable" contenteditable="true">New certification</h4>
+      <button class="item-remove" type="button">×</button>`;
+    return div;
+  }
+  function newChip(){
+    const span = document.createElement('span');
+    span.className = 'chip list-item';
+    span.innerHTML = `<span class="editable" contenteditable="true">new skill</span><button class="item-remove" type="button">×</button>`;
+    return span;
+  }
+  function newStackTag(){
+    const span = document.createElement('span');
+    span.className = 'tag';
+    span.innerHTML = `<span class="editable" contenteditable="true">tag</span><button class="item-remove" type="button">×</button>`;
+    return span;
+  }
+  function newContact(){
+    const div = document.createElement('div');
+    div.className = 'contact-line list-item';
+    div.innerHTML = `<a href="#" class="editable" contenteditable="true">new-link.example.com</a><button class="item-remove" type="button">×</button>`;
+    return div;
+  }
+  function newProject(){
     const article = document.createElement('article');
-    article.className = 'project';
-    article.dataset.projectId = id;
+    article.className = 'project list-item';
     article.innerHTML = `
+      <button class="item-remove" type="button">×</button>
       <div>
-        <h3 contenteditable="true" data-field="title">New project name</h3>
-        <p class="desc" contenteditable="true" data-field="desc">Write a short description here — the tools used and what it does.</p>
-        <div class="stack"><span contenteditable="true">tech-tag</span></div>
-        <div class="project-links">
-          <a href="#" target="_blank" rel="noopener" contenteditable="true" data-field="link">https://github.com/BilalIbrahim1/repo-name</a>
+        <h3 class="editable" contenteditable="true">New project name</h3>
+        <p class="desc editable" contenteditable="true">Write a short description here — the tools used and what it does.</p>
+        <div class="stack">
+          <span class="tag"><span class="editable" contenteditable="true">tech-tag</span><button class="item-remove" type="button">×</button></span>
+          <button class="add-item-btn tag" data-type="stack-tag" type="button">+ tag</button>
         </div>
-        <button class="remove-project btn small">Delete project</button>
+        <div class="project-links">
+          <a href="#" target="_blank" rel="noopener" class="editable" contenteditable="true">github.com/BilalIbrahim1/repo-name</a>
+        </div>
       </div>
       <div class="diagram">
         <svg viewBox="0 0 220 190" width="100%" xmlns="http://www.w3.org/2000/svg">
           <rect x="20" y="20" width="180" height="150" rx="10" fill="none" stroke="#2A3557" stroke-dasharray="4 4"/>
-          <text x="110" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#9AA4C2">Sketch / describe the workflow here</text>
+          <text x="110" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#9AA4C2">sketch the workflow here</text>
         </svg>
-      </div>
-    `;
-    projectsList.appendChild(article);
-    attachRemoveHandlers();
-    saveState();
-  });
-
-  function attachRemoveHandlers(){
-    document.querySelectorAll('.remove-project').forEach(btn=>{
-      btn.onclick = ()=>{
-        const article = btn.closest('[data-project-id]');
-        if(!article) return;
-        window.__removedIds = window.__removedIds || [];
-        window.__removedIds.push(article.dataset.projectId);
-        article.remove();
-        saveState();
-      };
-    });
+      </div>`;
+    return article;
   }
 
+  const factories = {
+    path: newPathNode, cert: newCert, chip: newChip,
+    'stack-tag': newStackTag, contact: newContact, project: newProject
+  };
+
+  /* ---------------- event delegation: add / remove ---------------- */
+  document.addEventListener('click', (e)=>{
+    const removeBtn = e.target.closest('.item-remove');
+    if(removeBtn){
+      const item = removeBtn.closest('.list-item');
+      if(item){ item.remove(); scheduleSave(); }
+      return;
+    }
+    const addBtn = e.target.closest('.add-item-btn');
+    if(addBtn){
+      const type = addBtn.dataset.type;
+      const factory = factories[type];
+      if(!factory) return;
+      const node = factory();
+      const targetId = addBtn.dataset.target;
+      const container = targetId ? document.getElementById(targetId) : addBtn.parentElement;
+      if(addBtn.parentElement === container){
+        container.insertBefore(node, addBtn);
+      } else {
+        container.appendChild(node);
+      }
+      if(editMode) node.querySelectorAll('.editable').forEach(el=>el.setAttribute('contenteditable','true'));
+      const firstField = node.querySelector('.editable');
+      if(firstField){ firstField.focus(); }
+      scheduleSave();
+    }
+  });
+
   document.addEventListener('blur', (e)=>{
-    if(e.target && e.target.hasAttribute && e.target.hasAttribute('contenteditable') && editMode){
-      saveState();
+    if(e.target && e.target.classList && e.target.classList.contains('editable') && editMode){
+      scheduleSave();
     }
   }, true);
 
-  attachRemoveHandlers();
-  loadState();
+  loadState().then(()=> setEditable(false));
   loadPhoto();
 
   /* ---------------- photo upload + crop ---------------- */
@@ -853,14 +814,11 @@ footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:v
   const zoomRange = document.getElementById('zoomRange');
   const cropCancel = document.getElementById('cropCancel');
   const cropSave = document.getElementById('cropSave');
-  const PHOTO_KEY = 'coverletter-photo-v1';
 
-  let cropImg = null;
-  let scale = 1, baseScale = 1, offX = 0, offY = 0;
+  let cropImg = null, scale = 1, baseScale = 1, offX = 0, offY = 0;
   let dragging = false, dragStartX = 0, dragStartY = 0, offStartX = 0, offStartY = 0;
 
   photoEditBtn.addEventListener('click', ()=> photoInput.click());
-
   photoInput.addEventListener('change', (e)=>{
     const file = e.target.files[0];
     if(!file) return;
@@ -874,62 +832,39 @@ footer .signoff{ font-family:'JetBrains Mono',monospace; font-size:12px; color:v
     cropImg = new Image();
     cropImg.onload = ()=>{
       baseScale = Math.max(cropCanvas.width / cropImg.width, cropCanvas.height / cropImg.height);
-      scale = 1; offX = 0; offY = 0;
-      zoomRange.value = 100;
+      scale = 1; offX = 0; offY = 0; zoomRange.value = 100;
       drawCrop();
       cropModal.classList.add('open');
     };
     cropImg.src = dataUrl;
   }
-
   function drawCrop(){
     const w = cropCanvas.width, h = cropCanvas.height;
     cropCtx.clearRect(0,0,w,h);
     const s = baseScale * scale;
     const iw = cropImg.width * s, ih = cropImg.height * s;
-    const x = (w - iw)/2 + offX;
-    const y = (h - ih)/2 + offY;
+    const x = (w - iw)/2 + offX, y = (h - ih)/2 + offY;
     cropCtx.drawImage(cropImg, x, y, iw, ih);
   }
-
-  zoomRange.addEventListener('input', ()=>{
-    scale = zoomRange.value / 100;
-    drawCrop();
-  });
-
+  zoomRange.addEventListener('input', ()=>{ scale = zoomRange.value / 100; drawCrop(); });
   function startDrag(x,y){ dragging = true; dragStartX = x; dragStartY = y; offStartX = offX; offStartY = offY; }
-  function moveDrag(x,y){
-    if(!dragging) return;
-    offX = offStartX + (x - dragStartX);
-    offY = offStartY + (y - dragStartY);
-    drawCrop();
-  }
+  function moveDrag(x,y){ if(!dragging) return; offX = offStartX + (x - dragStartX); offY = offStartY + (y - dragStartY); drawCrop(); }
   function endDrag(){ dragging = false; }
-
   cropWrap.addEventListener('mousedown', e=> startDrag(e.clientX, e.clientY));
   window.addEventListener('mousemove', e=> moveDrag(e.clientX, e.clientY));
   window.addEventListener('mouseup', endDrag);
   cropWrap.addEventListener('touchstart', e=>{ const t=e.touches[0]; startDrag(t.clientX, t.clientY); }, {passive:true});
   cropWrap.addEventListener('touchmove', e=>{ const t=e.touches[0]; moveDrag(t.clientX, t.clientY); }, {passive:true});
   cropWrap.addEventListener('touchend', endDrag);
-
   cropCancel.addEventListener('click', ()=> cropModal.classList.remove('open'));
-
   cropSave.addEventListener('click', async ()=>{
     const dataUrl = cropCanvas.toDataURL('image/jpeg', 0.88);
     profilePhoto.src = dataUrl;
     cropModal.classList.remove('open');
-    try{
-      await store.set(PHOTO_KEY, dataUrl);
-      flashSaved();
-    }catch(err){ console.error('photo save failed', err); }
+    try{ await store.set(PHOTO_KEY, dataUrl); flashSaved(); }catch(err){ console.error('photo save failed', err); }
   });
-
   async function loadPhoto(){
-    try{
-      const res = await store.get(PHOTO_KEY);
-      if(res && res.value) profilePhoto.src = res.value;
-    }catch(e){ /* no saved photo yet */ }
+    try{ const res = await store.get(PHOTO_KEY); if(res && res.value) profilePhoto.src = res.value; }catch(e){}
   }
 })();
 </script>
